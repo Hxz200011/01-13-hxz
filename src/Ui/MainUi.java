@@ -6,12 +6,14 @@ import Bll.impl.IFlightService;
 
 import java.sql.SQLException;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainUi {
     public MainUi() {
     }
-
     public static void main(String[] args) throws SQLException {
 
         Scanner sc=new Scanner(System.in);
@@ -24,8 +26,11 @@ public class MainUi {
             System.out.println("按4，机票预订:");
             System.out.println("按6，退出系统:");
 
+            int choice = sc.nextInt();
+
             String id= UUID.randomUUID().toString().replace("-","");
-            //System.out.println(id.replace("-",""));
+
+            if (choice==1){
             System.out.println("请输入航班编号：");
             String flightid=sc.next();
             System.out.println("请输入机型：");
@@ -42,21 +47,42 @@ public class MainUi {
             Flight flight=new Flight( id,flightid,planeType,currentseatsNumber,
                     departureAirport,destinationAirPort,departureTime);
             IFlightService iFlightService =new FlightServiceimpl();
-                iFlightService.insertFlight(flight);
 
-
-
-           /* IFlightService iFlightService =new FlightServiceimpl();
-
-            try{
+            try {
                 iFlightService.insertFlight(flight);
             } catch (SQLException e) {
-                e.printStackTrace();
-                String erroMessage=e.getMessage();
-                String errorId=erroMessage.substring(0,9);
-                System.out.println("错误编码"+errorId);
-                if("ORA-1899".equals(+errorId));
-            }*/
+                String errorMessage = e.getMessage();
+                if (errorMessage.startsWith("ORA-12899")) {
+                    //ORA-12899: value too large for column "OPTS"."FLIGHT"."ID" (actual: 32, maximum: 30)
+                    // 按指定模式在字符串查找
+                    String pattern = "(\\w+-\\d{5}):(\\s\\w+)+\\s(\"\\w+\")\\.(\"\\w+\")\\.(\"\\w+\")";
+                    // 创建 Pattern 对象
+                    Pattern r = Pattern.compile(pattern);
+                    // 现在创建 matcher 对象
+                    Matcher m = r.matcher(errorMessage);
+                    if (m.find()) {
+                        String tableName = m.group(4);
+                        String columnName = m.group(5);
+                        System.out.println(tableName + "表的" + columnName + "这一列的值过大，请仔细检查");
+                    } else {
+                        System.out.println("NO MATCH");
+                    }
+                }
+            }
+
+
+            }else if (choice==2){
+                IFlightService iFlightService =new FlightServiceimpl();
+                try {
+                    Set<Flight> allFlights=iFlightService.getAllFlights();
+                    /*Set的遍历需要用到迭代器*/
+                    for (Flight flight:allFlights){
+                        System.out.println(flight);
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

@@ -4,25 +4,27 @@ import Dao.FlightDaoimpl;
 import Dao.IFlightDao;
 import Bean.Flight;
 
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Set;
 
+import static javafx.scene.input.KeyCode.V;
+
 public class FlightServiceimpl implements IFlightService {
-    IFlightDao IFlightDao;//定义一个类
+    IFlightDao iFlightDao;//定义一个类
     public FlightServiceimpl(){
-        IFlightDao =new FlightDaoimpl();
+        iFlightDao =new FlightDaoimpl();
     }
 
     @Override
     public void insertFlight(Flight flight) throws SQLException {
-        IFlightDao.insertFlight(flight);
-        System.out.println("界面传来的航班信息"+flight+"\n");
+        iFlightDao.insertFlight(flight);
 
     }
 
     @Override
-    public Set<Flight> getAllFlights() {
-        return null;
+    public Set<Flight> getAllFlights() throws SQLException {
+
+        return iFlightDao.getAllFlights();
     }
 
     @Override
